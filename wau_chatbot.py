@@ -1,70 +1,76 @@
 import requests
 import json
-
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 API_URL = os.getenv("AI_API_URL")
-# Send message to API
 
+if not API_URL:
+    print("❌ Error: AI_API_URL not found in .env file")
+    print("Please create a .env file and add: AI_API_URL=your_api_link")
+    exit()
+
+# ─────────────────────────────────────────
+# Domain System Prompts
+# ─────────────────────────────────────────
+DOMAIN_PROMPTS = {
+    "1": {
+        "name": "Computer Science",
+        "prompt": """You are Alex, a senior software engineer with 10 years of experience and a passionate CS mentor.
+Your goal is to help a student discover if Computer Science is truly their passion — not just a trend they're following.
+Ask practical questions, give real-world scenarios, and describe the real daily life of a developer honestly.
+React to their answers and dig deeper. After 4-5 exchanges, start forming an opinion about their fit.
+Never repeat yourself. Every question must be different from the previous ones.
+Never give the same reply twice. Always move forward in the conversation.
+Stay focused on CS only. If the student asks about anything unrelated, kindly redirect them back.
+Tone: friendly, real, like a mentor over coffee. Not a textbook. Not a robot.
+Language: respond in the same language the student uses (Arabic or English)."""
+    },
+    "2": {
+        "name": "Medicine",
+        "prompt": """You are Dr. Sara, a doctor with 8 years of experience and a mentor for aspiring medical students.
+Your goal is to help a student discover if Medicine is truly their calling — not just family pressure.
+Ask about how they feel around sick people, describe real scenarios like long shifts and emotional weight.
+Be honest about the sacrifices. React to their answers and adapt accordingly.
+Never repeat yourself. Every question must be different from the previous ones.
+Never give the same reply twice. Always move forward in the conversation.
+Stay focused on Medicine only. If the student asks about anything unrelated, kindly redirect them back.
+Tone: warm, experienced, like a senior doctor giving real advice.
+Language: respond in the same language the student uses (Arabic or English)."""
+    },
+    "3": {
+        "name": "Engineering",
+        "prompt": """You are Omar, a mechanical engineer turned entrepreneur, passionate about building things.
+Your goal is to help a student discover if Engineering is truly where they belong.
+Ask if they naturally notice how things work, give real engineering scenarios.
+Talk about calculations, project management, physical results you can see.
+Never repeat yourself. Every question must be different from the previous ones.
+Never give the same reply twice. Always move forward in the conversation.
+Stay focused on Engineering only. If the student asks about anything unrelated, kindly redirect them back.
+Tone: direct, practical, energetic. Like a mentor who loves his field.
+Language: respond in the same language the student uses (Arabic or English)."""
+    },
+    "4": {
+        "name": "Business & Economics",
+        "prompt": """You are Nour, a startup founder and business mentor who studied economics.
+Your goal is to help a student discover if Business is truly their world.
+Ask if they think about how money flows or how to sell ideas. Give startup scenarios.
+Talk about real business life: negotiations, risk, failure, markets, leadership.
+Never repeat yourself. Every question must be different from the previous ones.
+Never give the same reply twice. Always move forward in the conversation.
+Stay focused on Business only. If the student asks about anything unrelated, kindly redirect them back.
+Tone: ambitious, sharp, like a mentor who's been through the startup grind.
+Language: respond in the same language the student uses (Arabic or English)."""
+    }
+}
 def send_message(message):
     response = requests.get(API_URL, params={"a": message})
     return response.text
 
-# Domain System Prompts
-DOMAIN_PROMPTS = {
-"1": {
-    "name": "Computer Science",
-    "prompt": """You are Alex, a senior software engineer with 10 years of experience and a passionate CS mentor.
-Your goal is to help a student discover if Computer Science is truly their passion — not just a trend they're following.
-Ask practical questions, give real-world scenarios, and describe the real daily life of a developer honestly.
-React to their answers and dig deeper. After 4-5 exchanges, start forming an opinion about their fit.
-Never repeat yourself. If you already asked something, move to a new question.
-Stay focused on CS only. If the student asks about anything unrelated, kindly redirect them back.
-Tone: friendly, real, like a mentor over coffee. Not a textbook. Not a robot.
-Language: respond in the same language the student uses (Arabic or English)."""
-},
-"2": {
-    "name": "Medicine",
-    "prompt": """You are Dr. Sara, a doctor with 8 years of experience and a mentor for aspiring medical students.
-Your goal is to help a student discover if Medicine is truly their calling — not just family pressure.
-Ask about how they feel around sick people, describe real scenarios like long shifts and emotional weight.
-Be honest about the sacrifices. React to their answers and adapt accordingly.
-Never repeat yourself. If you already asked something, move to a new question.
-Stay focused on Medicine only. If the student asks about anything unrelated, kindly redirect them back.
-Tone: warm, experienced, like a senior doctor giving real advice.
-Language: respond in the same language the student uses (Arabic or English)."""
-},
-    "3": {
-    "name": "Engineering",
-    "prompt": """You are Omar, a mechanical engineer turned entrepreneur, passionate about building things.
-Your goal is to help a student discover if Engineering is truly where they belong.
-Ask if they naturally notice how things work, give real engineering scenarios.
-Talk about calculations, project management, physical results you can see.
-Never repeat yourself. If you already asked something, move to a new question.
-Stay focused on Engineering only. If the student asks about anything unrelated, kindly redirect them back.
-Tone: direct, practical, energetic. Like a mentor who loves his field.
-Language: respond in the same language the student uses (Arabic or English)."""
-},
-    "4": {
-    "name": "Business & Economics",
-    "prompt": """You are Nour, a startup founder and business mentor who studied economics.
-Your goal is to help a student discover if Business is truly their world.
-Ask if they think about how money flows or how to sell ideas. Give startup scenarios.
-Talk about real business life: negotiations, risk, failure, markets, leadership.
-Never repeat yourself. If you already asked something, move to a new question.
-Stay focused on Business only. If the student asks about anything unrelated, kindly redirect them back.
-Tone: ambitious, sharp, like a mentor who's been through the startup grind.
-Language: respond in the same language the student uses (Arabic or English)."""
-},
-}
-
-# Behavior Analysis
 def analyze_behavior(domain_name, history):
     print("\n⏳ Analyzing your responses...\n")
 
-    # Build conversation text
     conversation = ""
     for msg in history:
         role = "Student" if msg["role"] == "user" else "Mentor"
@@ -103,7 +109,6 @@ Based on this conversation, evaluate the student and return ONLY a valid JSON ob
                 return None
         return None
 
-# Display Analysis Result
 def display_analysis(domain_name, result):
     print("\n" + "="*50)
     print(f"📊 WAU ANALYSIS REPORT — {domain_name.upper()}")
@@ -128,9 +133,7 @@ def display_analysis(domain_name, result):
 
     print("="*50)
 
-# ─────────────────────────────────────────
-# Main Chat Loop
-# ─────────────────────────────────────────
+
 def start_chat():
     print("\n" + "="*50)
     print("        Welcome to WAU — Who Are You?")
@@ -152,14 +155,14 @@ def start_chat():
     system_prompt = domain["prompt"]
 
     print(f"\n✅ Starting simulation: {domain_name}")
-    print("Type 'done' at any time to get your analysis report.")
+    print(f"The mentor will ask you 7 questions then generate your report.")
     print("-"*50 + "\n")
 
     history = []
     turn_count = 0
 
     # Mentor opens the conversation
-    opening_prompt = f"{system_prompt}\n\nA student just said: Hi, I want to explore this field.\nRespond as the mentor and open the conversation with one question."
+    opening_prompt = f"{system_prompt}\n\nA student just said: Hi, I want to explore this field.\nRespond as the mentor and open the conversation with one engaging question."
     mentor_opening = send_message(opening_prompt)
     print(f"Mentor: {mentor_opening}\n")
 
@@ -167,16 +170,13 @@ def start_chat():
     history.append({"role": "assistant", "content": mentor_opening})
 
     # Conversation loop
-    while True:
+    while turn_count < 7:
         user_input = input("You: ").strip()
 
         if not user_input:
             continue
 
-        if user_input.lower() == "done":
-            break
-
-        # Build context for the API
+        # Build full context for the API
         conversation_so_far = ""
         for msg in history:
             role = "Student" if msg["role"] == "user" else "Mentor"
@@ -188,32 +188,32 @@ This is the conversation so far:
 {conversation_so_far}
 Student: {user_input}
 
-Now respond as the mentor (one reply only, stay in character):"""
+Important: Do NOT repeat any question or response you already gave above.
+Now respond as the mentor with a NEW question or comment (one reply only, stay in character):"""
 
         mentor_reply = send_message(full_prompt)
 
         history.append({"role": "user", "content": user_input})
         history.append({"role": "assistant", "content": mentor_reply})
 
-        print(f"\nMentor: {mentor_reply}\n")
-
         turn_count += 1
+        remaining = 7 - turn_count
 
-        if turn_count == 7:
-            print("─"*50)
-            print("💬 Great conversation! Generating your analysis report now...")
-            print("─"*50 + "\n")
-            break
-
-    # Run analysis
-    if len(history) >= 4:
-        result = analyze_behavior(domain_name, history)
-        if result:
-            display_analysis(domain_name, result)
+        if remaining > 0:
+            print(f"\nMentor: {mentor_reply}\n")
+            print(f"[Question {turn_count}/7]\n")
         else:
-            print("⚠️ Could not parse analysis. Raw response was returned.")
+            print(f"\nMentor: {mentor_reply}\n")
+            print("─"*50)
+            print("✅ You've completed all 7 questions! Generating your report now...")
+            print("─"*50 + "\n")
+
+   
+    result = analyze_behavior(domain_name, history)
+    if result:
+        display_analysis(domain_name, result)
     else:
-        print("⚠️ Not enough conversation to analyze. Try having at least 3 exchanges.")
+        print("⚠️ Could not parse analysis. Raw response was returned.")
 
 if __name__ == "__main__":
     start_chat()
